@@ -1560,7 +1560,7 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
                                r'\s+<td align="right">%d</td>' % len(self.BAR_CONTENTS),
                                ])
             self.failUnless(re.search(get_bar, res), res)
-            for label in ['unlink', 'rename/move']:
+            for label in ['unlink', 'rename/relink']:
                 for line in res.split("\n"):
                     # find the line that contains the relevant button for bar.txt
                     if ("form action" in line and
@@ -3529,8 +3529,8 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsFooJSON)
         return d
 
-    def test_POST_move_file(self):
-        d = self.POST(self.public_url + "/foo", t="move",
+    def test_POST_relink_file(self):
+        d = self.POST(self.public_url + "/foo", t="relink",
                       from_name="bar.txt", to_dir="sub")
         d.addCallback(lambda res:
                       self.failIfNodeHasChild(self._foo_node, u"bar.txt"))
@@ -3542,8 +3542,8 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_file_new_name(self):
-        d = self.POST(self.public_url + "/foo", t="move",
+    def test_POST_relink_file_new_name(self):
+        d = self.POST(self.public_url + "/foo", t="relink",
                       from_name="bar.txt", to_name="wibble.txt", to_dir="sub")
         d.addCallback(lambda res:
                       self.failIfNodeHasChild(self._foo_node, u"bar.txt"))
@@ -3557,8 +3557,8 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_file_replace(self):
-        d = self.POST(self.public_url + "/foo", t="move",
+    def test_POST_relink_file_replace(self):
+        d = self.POST(self.public_url + "/foo", t="relink",
                       from_name="bar.txt", to_name="baz.txt", to_dir="sub")
         d.addCallback(lambda res:
                       self.failIfNodeHasChild(self._foo_node, u"bar.txt"))
@@ -3568,11 +3568,11 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_file_no_replace(self):
-        d = self.shouldFail2(error.Error, "POST_move_file_no_replace",
+    def test_POST_relink_file_no_replace(self):
+        d = self.shouldFail2(error.Error, "POST_relink_file_no_replace",
                              "409 Conflict",
                              "There was already a child by that name, and you asked me to not replace it",
-                             self.POST, self.public_url + "/foo", t="move",
+                             self.POST, self.public_url + "/foo", t="relink",
                              replace="false", from_name="bar.txt",
                              to_name="baz.txt", to_dir="sub")
         d.addCallback(lambda res: self.GET(self.public_url + "/foo/bar.txt"))
@@ -3583,11 +3583,11 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsSubBazDotTxt)
         return d
 
-    def test_POST_move_file_slash_fail(self):
+    def test_POST_relink_file_slash_fail(self):
         d = self.shouldFail2(error.Error, "test_POST_rename_file_slash_fail",
                              "400 Bad Request",
                              "to_name= may not contain a slash",
-                             self.POST, self.public_url + "/foo", t="move",
+                             self.POST, self.public_url + "/foo", t="relink",
                              from_name="bar.txt",
                              to_name="slash/fail.txt", to_dir="sub")
         d.addCallback(lambda res:
@@ -3600,16 +3600,16 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
                                        "400 Bad Request",
                                        "from_name= may not contain a slash",
                                        self.POST, self.public_url + "/foo",
-                                       t="move",
+                                       t="relink",
                                        from_name="nope/bar.txt",
                                        to_name="fail.txt", to_dir="sub"))
         return d
 
-    def test_POST_move_file_no_target(self):
-        d = self.shouldFail2(error.Error, "POST_move_file_no_target",
+    def test_POST_relink_file_no_target(self):
+        d = self.shouldFail2(error.Error, "POST_relink_file_no_target",
                              "400 Bad Request",
-                             "move requires from_name and to_dir",
-                             self.POST, self.public_url + "/foo", t="move",
+                             "relink requires from_name and to_dir",
+                             self.POST, self.public_url + "/foo", t="relink",
                              from_name="bar.txt", to_name="baz.txt")
         d.addCallback(lambda res: self.GET(self.public_url + "/foo/bar.txt"))
         d.addCallback(self.failUnlessIsBarDotTxt)
@@ -3619,18 +3619,18 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBazDotTxt)
         return d
 
-    def test_POST_move_file_bad_target_type(self):
-        d = self.shouldFail2(error.Error, "test_POST_move_file_bad_target_type",
-                             "400 Bad Request", "invalid target_type parameter",
+    def test_POST_relink_file_bad_target_type(self):
+        d = self.shouldFail2(error.Error, "test_POST_relink_file_bad_target_type",
+                             "400 Bad Request", "to_dir is not a directory",
                              self.POST,
-                             self.public_url + "/foo", t="move",
+                             self.public_url + "/foo", t="relink",
                              target_type="*D", from_name="bar.txt",
                              to_dir="sub")
         return d
 
-    def test_POST_move_file_multi_level(self):
+    def test_POST_relink_file_multi_level(self):
         d = self.POST(self.public_url + "/foo/sub/level2?t=mkdir", "")
-        d.addCallback(lambda res: self.POST(self.public_url + "/foo", t="move",
+        d.addCallback(lambda res: self.POST(self.public_url + "/foo", t="relink",
                       from_name="bar.txt", to_dir="sub/level2"))
         d.addCallback(lambda res: self.failIfNodeHasChild(self._foo_node, u"bar.txt"))
         d.addCallback(lambda res: self.failIfNodeHasChild(self._sub_node, u"bar.txt"))
@@ -3640,8 +3640,8 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_file_to_uri(self):
-        d = self.POST(self.public_url + "/foo", t="move", target_type="uri",
+    def test_POST_relink_file_to_uri(self):
+        d = self.POST(self.public_url + "/foo", t="relink", target_type="uri",
                       from_name="bar.txt", to_dir=self._sub_uri)
         d.addCallback(lambda res:
                       self.failIfNodeHasChild(self._foo_node, u"bar.txt"))
@@ -3651,17 +3651,17 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_file_to_nonexist_dir(self):
-        d = self.shouldFail2(error.Error, "POST_move_file_to_nonexist_dir",
+    def test_POST_relink_file_to_nonexistent_dir(self):
+        d = self.shouldFail2(error.Error, "POST_relink_file_to_nonexistent_dir",
                             "404 Not Found", "No such child: nopechucktesta",
-                            self.POST, self.public_url + "/foo", t="move",
+                            self.POST, self.public_url + "/foo", t="relink",
                             from_name="bar.txt", to_dir="nopechucktesta")
         return d
 
-    def test_POST_move_file_into_file(self):
-        d = self.shouldFail2(error.Error, "POST_move_file_into_file",
+    def test_POST_relink_file_into_file(self):
+        d = self.shouldFail2(error.Error, "POST_relink_file_into_file",
                              "400 Bad Request", "to_dir is not a directory",
-                             self.POST, self.public_url + "/foo", t="move",
+                             self.POST, self.public_url + "/foo", t="relink",
                              from_name="bar.txt", to_dir="baz.txt")
         d.addCallback(lambda res: self.GET(self.public_url + "/foo/baz.txt"))
         d.addCallback(self.failUnlessIsBazDotTxt)
@@ -3671,10 +3671,10 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_file_to_bad_uri(self):
-        d =  self.shouldFail2(error.Error, "POST_move_file_to_bad_uri",
+    def test_POST_relink_file_to_bad_uri(self):
+        d =  self.shouldFail2(error.Error, "POST_relink_file_to_bad_uri",
                               "400 Bad Request", "to_dir is not a directory",
-                              self.POST, self.public_url + "/foo", t="move",
+                              self.POST, self.public_url + "/foo", t="relink",
                               from_name="bar.txt", target_type="uri",
                               to_dir="URI:DIR2:mn5jlyjnrjeuydyswlzyui72i:rmneifcj6k6sycjljjhj3f6majsq2zqffydnnul5hfa4j577arma")
         d.addCallback(lambda res: self.GET(self.public_url + "/foo/bar.txt"))
@@ -3683,11 +3683,11 @@ class Web(WebMixin, WebErrorMixin, testutil.StallMixin, testutil.ReallyEqualMixi
         d.addCallback(self.failUnlessIsBarJSON)
         return d
 
-    def test_POST_move_dir(self):
-        d = self.POST(self.public_url + "/foo", t="move",
+    def test_POST_relink_dir(self):
+        d = self.POST(self.public_url + "/foo", t="relink",
                       from_name="bar.txt", to_dir="empty")
         d.addCallback(lambda res: self.POST(self.public_url + "/foo",
-                      t="move", from_name="empty", to_dir="sub"))
+                      t="relink", from_name="empty", to_dir="sub"))
         d.addCallback(lambda res:
                       self.failIfNodeHasChild(self._foo_node, u"empty"))
         d.addCallback(lambda res:
