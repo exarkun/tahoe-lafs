@@ -1288,11 +1288,10 @@ Relinking a Child
 
  This instructs the node to relink a child of the given source directory,
  into a different directory and/or to a different name. The source and
- destination directories must be writeable. {{{to_dir}}} may be the same
- as the source directory and {{{to_name}}} may be the same as {{{from_name}}},
- but {{{to_dir}}} and {{{to_name}}} are always required. If the destination
- link (directory and name) is the same as the source link, the operation has
- no effect.
+ destination directories must be writeable. If {{{to_dir}}} is not present,
+ the child link is renamed within the same directory. If {{{to_name}}} is
+ not present then it defaults to {{{from_name}}}. If the destination
+ directory and name are the same as the source, the operation has no effect.
 
  Metadata from the source directory entry is preserved. Multiple levels of
  descent in the source and destination paths are supported.
@@ -1302,22 +1301,22 @@ Relinking a Child
  directory does not exist. It will return an HTTP 400 "Bad Request" error
  if any entry in the source or destination paths is not a directory.
 
- The default behavior is to overwrite any existing object at the destination
+ The default behavior is to overwrite any existing link at the destination
  (replace=true). To prevent this (and make the operation return an error
  instead of overwriting), add a "replace=false" argument. With replace=false,
  this operation will return an HTTP 409 "Conflict" error if there is already
- an object at the destination, rather than overwriting the existing object.
- To allow the operation to overwrite a file, but return an HTTP 409 error
- when trying to overwrite a directory, use "replace=only-files" (this behavior
- is closer to the traditional UNIX "mv" command). Note that "true", "t", and
- "1" are all synonyms for "True"; "false", "f", and "0" are synonyms for
- "False"; and the parameter is case-insensitive.
+ a link at the destination, rather than overwriting the existing link.
+ To allow the operation to overwrite a link to a file, but return an HTTP 409
+ error when trying to overwrite a link to a directory, use "replace=only-files"
+ (this behavior is closer to the traditional UNIX "mv" command). Note that
+ "true", "t", and "1" are all synonyms for "True"; "false", "f", and "0" are
+ synonyms for "False"; and the parameter is case-insensitive.
 
- When relinking into a different directory, for safety, the child is not
- unlinked from the old directory until it has been successfully linked into
+ When relinking into a different directory, for safety, the child link is
+ not removed from the old directory until it has been successfully added to
  the new directory. This implies that in case of a crash or failure, the
- child will not be lost, but could be linked at both the old and new
- locations.
+ link to the child will not be lost, but it could be linked at both the old
+ and new locations.
 
  The source link should not be the same as any link (directory and child name)
  in the ``to_dir`` path. This restriction is not enforced, but it may be
