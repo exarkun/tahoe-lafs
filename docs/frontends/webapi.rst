@@ -1290,8 +1290,9 @@ Relinking a Child
  into a different directory and/or to a different name. The source and
  destination directories must be writeable. If {{{to_dir}}} is not present,
  the child link is renamed within the same directory. If {{{to_name}}} is
- not present then it defaults to {{{from_name}}}. If the destination
- directory and name are the same as the source, the operation has no effect.
+ not present then it defaults to {{{from_name}}}. If the destination link
+ (directory and name) is the same as the source link, the operation has no
+ effect.
 
  Metadata from the source directory entry is preserved. Multiple levels of
  descent in the source and destination paths are supported.

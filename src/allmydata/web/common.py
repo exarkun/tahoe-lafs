@@ -24,7 +24,8 @@ def getxmlfile(name):
 
 def boolean_of_arg(arg):
     # TODO: ""
-    assert arg.lower() in ("true", "t", "1", "false", "f", "0", "on", "off")
+    if arg.lower() not in ("true", "t", "1", "false", "f", "0", "on", "off"):
+        raise WebError("invalid boolean argument", http.BAD_REQUEST)
     return arg.lower() in ("true", "t", "1", "on")
 
 def parse_replace_arg(replace):

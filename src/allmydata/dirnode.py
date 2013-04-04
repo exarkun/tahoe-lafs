@@ -644,15 +644,15 @@ class DirectoryNode:
     def move_child_to(self, current_child_namex, new_parent,
                       new_child_namex=None, overwrite=True):
         """
-        I take one of my children and move them to a new parent. The child
-        is referenced by name. On the new parent, the child will live under
-        'new_child_namex', which defaults to 'current_child_namex'. I return a
-        Deferred that fires when the operation finishes.
+        I take one of my child links and move it to a new parent. The child
+        link is referenced by name. In the new parent, the child link will live
+        at 'new_child_namex', which defaults to 'current_child_namex'. I return
+        a Deferred that fires when the operation finishes.
         'new_child_namex' and 'current_child_namex' need not be normalized.
 
         The overwrite parameter may be True (overwrite any existing child),
-        False (error if the new child already exists), or "only-files"
-        (error if the new child is a directory).
+        False (error if the new child link already exists), or "only-files"
+        (error if the new child link exists and points to a directory).
         """
         if self.is_readonly() or new_parent.is_readonly():
             return defer.fail(NotWriteableError())
