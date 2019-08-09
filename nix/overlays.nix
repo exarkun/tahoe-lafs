@@ -1,7 +1,5 @@
 self: super: rec {
-  inherit (super.callPackage ./openssl.nix { }) openssl_1_1;
-  # XXX Inserting this trace caused a segfault.
-  openssl = builtins.trace openssl_1_1 openssl_1_1;
+  openssl = super.openssl_1_1;
 
   python27 = super.python27.override {
     packageOverrides = python-self: python-super: {
