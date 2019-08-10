@@ -76,7 +76,7 @@ pythonPackages.buildPythonPackage rec {
   checkInputs = with pythonPackages; [ hypothesis testtools fixtures treq ];
 
   checkPhase = ''
-  ${python}/bin/python -m twisted.trial --rterrors allmydata
+  ${python}/bin/python -m twisted.trial -j4 --rterrors allmydata
   '';
 
   meta = {
