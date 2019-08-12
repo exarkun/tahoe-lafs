@@ -1,9 +1,10 @@
 { bootstrap_pkgs ? import <nixpkgs> { } }:
 let
   pkgs = import ./nixpkgs.nix { pkgs = bootstrap_pkgs; };
-  tahoe-lafs-lib = pkgs.python27Packages.callPackage ./tahoe-lafs.nix { };
-  custom-python = pkgs.python27.withPackages (ps:
-    with pkgs.python27.pkgs;
+  python = pkgs.python27;
+  tahoe-lafs-lib = python.pkgs.callPackage ./tahoe-lafs.nix { };
+  custom-python = python.withPackages (ps:
+    with ps;
     [ tahoe-lafs-lib
 
       # checkInputs - non-recoverable from the tahoe-lafs derivation.
