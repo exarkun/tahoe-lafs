@@ -26,7 +26,9 @@ pythonPackages.buildPythonPackage rec {
     done
 
     sed -i 's/"zope.interface.*"/"zope.interface"/' src/allmydata/_auto_deps.py
-    sed -i 's/"pycrypto.*"/"pycrypto"/' src/allmydata/_auto_deps.py
+
+    # This test is flaky.
+    sed -i 's/test_stdout/skiptest_stdout/' src/allmydata/test/test_eliotutil.py
   '';
 
   # Remove broken and expensive tests.
