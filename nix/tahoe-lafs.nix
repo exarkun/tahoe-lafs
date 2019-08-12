@@ -1,11 +1,16 @@
-{ fetchurl, lib, unzip, nettools, python, pythonPackages, texinfo }:
-
+{ fetchurl, lib, unzip, nettools, texinfo
+, python, buildPythonPackage
+, sphinx, numpy, mock, twisted, foolscap, nevow, simplejson, zfec, darcsver
+, setuptoolsTrial, setuptoolsDarcs, pyasn1, zope_interface, service-identity
+, pyyaml, magic-wormhole, eliot, autobahn, cryptography
+, hypothesis, testtools, fixtures, treq
+}:
 # FAILURES: The "running build_ext" phase fails to compile Twisted
 # plugins, because it tries to write them into Twisted's (immutable)
 # store path. The problem appears to be non-fatal, but there's probably
 # some loss of functionality because of it.
 
-pythonPackages.buildPythonPackage rec {
+buildPythonPackage rec {
   version = "1.13.0.post";
   name = "tahoe-lafs-${version}";
   namePrefix = "";
@@ -24,8 +29,6 @@ pythonPackages.buildPythonPackage rec {
     do
       sed -i "$i" -e"s/localhost/127.0.0.1/g"
     done
-
-    sed -i 's/"zope.interface.*"/"zope.interface"/' src/allmydata/_auto_deps.py
 
     # This test is flaky.
     sed -i 's/test_stdout/skiptest_stdout/' src/allmydata/test/test_eliotutil.py
@@ -47,12 +50,12 @@ pythonPackages.buildPythonPackage rec {
     )
   '';
 
-  nativeBuildInputs = with pythonPackages; [ sphinx texinfo ];
+  nativeBuildInputs = [ sphinx texinfo ];
 
-  buildInputs = with pythonPackages; [ unzip numpy mock ];
+  buildInputs = [ unzip numpy mock ];
 
   # The `backup' command requires `sqlite3'.
-  propagatedBuildInputs = with pythonPackages; [
+  propagatedBuildInputs = [
     twisted foolscap nevow simplejson zfec darcsver
     setuptoolsTrial setuptoolsDarcs pyasn1 zope_interface
     service-identity pyyaml
@@ -75,10 +78,10 @@ pythonPackages.buildPythonPackage rec {
     )
   '';
 
-  checkInputs = with pythonPackages; [ hypothesis testtools fixtures treq ];
+  checkInputs = [ hypothesis testtools fixtures treq ];
 
   checkPhase = ''
-  ${python}/bin/python -m twisted.trial -j4 --rterrors allmydata
+  ${python}/bin/python -m twisted.trial -x --rterrors allmydata
   '';
 
   meta = {
