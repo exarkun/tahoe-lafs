@@ -46,7 +46,6 @@ install_requires = [
     'cryptography >= 2.3',
 
     "service-identity",         # this is needed to suppress complaints about being unable to verify certs
-    "characteristic >= 14.0.0", # latest service-identity depends on this version
     "pyasn1 >= 0.1.8",          # latest pyasn1-modules depends on this version
     "pyasn1-modules >= 0.0.5",  # service-identity depends on this
 
@@ -127,7 +126,6 @@ package_imports = [
     ('OpenSSL',          None),
     ('pyasn1',           'pyasn1'),
     ('service-identity', 'service_identity'),
-    ('characteristic',   'characteristic'),
     ('pyasn1-modules',   'pyasn1_modules'),
     ('cryptography',     'cryptography'),
     ('cffi',             'cffi'),

@@ -1,7 +1,7 @@
 { fetchurl, lib, unzip, nettools, texinfo
 , python, buildPythonPackage
-, sphinx, numpy, mock, twisted, foolscap, nevow, simplejson, zfec, darcsver
-, setuptoolsTrial, setuptoolsDarcs, pyasn1, zope_interface, service-identity
+, sphinx, numpy, mock, twisted, foolscap, nevow, simplejson, zfec
+, setuptoolsTrial, pyasn1, zope_interface, service-identity
 , pyyaml, magic-wormhole, eliot, autobahn, cryptography
 , hypothesis, testtools, fixtures, treq
 }:
@@ -56,8 +56,8 @@ buildPythonPackage rec {
 
   # The `backup' command requires `sqlite3'.
   propagatedBuildInputs = [
-    twisted foolscap nevow simplejson zfec darcsver
-    setuptoolsTrial setuptoolsDarcs pyasn1 zope_interface
+    twisted foolscap nevow simplejson zfec
+    setuptoolsTrial pyasn1 zope_interface
     service-identity pyyaml
 
     magic-wormhole eliot autobahn cryptography
