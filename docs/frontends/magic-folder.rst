@@ -49,8 +49,34 @@ magic-folder collective. A confidential, authenticated communications channel
 should be used to transmit the invite code to each member, who will be
 joining using the ``tahoe magic-folder join`` command.
 
-These settings are persisted in the ``[magic_folder]`` section of the
-gateway's ``tahoe.cfg`` file.
+These settings are persisted in the ``magic_folders.yaml`` configuration file in the private section of the node directory.
+This file is typically written using the ``tahoe magic-folder`` commands rather than being edited directly.
+The yaml document in this file consists of a top-level ``magic-folders`` key associated with a mapping value.
+Keys in the mapping are magic folder names and values are mappings containing the following keys.
+
+``collective_dircap``
+
+    The capability string for the magic folder's "collective" directory.
+
+``upload_dircap``
+
+    The capacility string for the magic folder's "upload" directory.
+
+``directory``
+
+    This specifies the local directory to be monitored for new or changed files.
+    If the path contains non-ASCII characters, it should be encoded in UTF-8 regardless of the system's filesystem encoding.
+    Relative paths will be interpreted starting from the node's base directory.
+
+``poll_interval``
+
+    An integer number of seconds to wait between synchronization attempts.
+
+``umask`` (optional)
+
+    A filesystem permission mask to apply whenever creating local files inside the magic folder.
+
+Additionally, the magic folder feature must be enabled in the  ``[magic_folder]`` section of the gateway's ``tahoe.cfg`` file.
 
 ``[magic_folder]``
 
@@ -58,17 +84,6 @@ gateway's ``tahoe.cfg`` file.
 
     If this is ``True``, Magic Folder will be enabled. The default value is
     ``False``.
-
-``local.directory = (UTF-8 path)``
-
-    This specifies the local directory to be monitored for new or changed
-    files. If the path contains non-ASCII characters, it should be encoded
-    in UTF-8 regardless of the system's filesystem encoding. Relative paths
-    will be interpreted starting from the node's base directory.
-
-You should not normally need to set these fields manually because they are
-set by the ``tahoe magic-folder create`` and/or ``tahoe magic-folder join``
-commands. Use the ``--help`` option to these commands for more information.
 
 After setting up a Magic Folder collective and starting or restarting each
 gateway, you can confirm that the feature is working by copying a file into
