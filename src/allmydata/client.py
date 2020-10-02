@@ -14,8 +14,15 @@ from foolscap.furl import (
 import attr
 from zope.interface import implementer
 
+from hyperlink import (
+    DecodedURL,
+)
+
 from twisted.plugin import (
     getPlugins,
+)
+from twisted.web.client import (
+    Agent,
 )
 from twisted.internet import reactor, defer
 from twisted.application import service
@@ -31,6 +38,9 @@ from allmydata.immutable.upload import Uploader
 from allmydata.immutable.offloaded import Helper
 from allmydata.control import ControlServer
 from allmydata.introducer.client import IntroducerClient
+from allmydata.introducer.http_client import (
+    HTTPIntroducerClient,
+)
 from allmydata.util import (
     hashutil, base32, pollmixin, log, idlib,
     yamlutil, configutil,
@@ -79,6 +89,7 @@ _client_config = configutil.ValidConfiguration(
         "client": (
             "helper.furl",
             "introducer.furl",
+            "http_introducer_urls",
             "key_generator.furl",
             "mutable.format",
             "peers.preferred",
@@ -283,9 +294,11 @@ def create_client_from_config(config, _client_factory=None, _introducer_factory=
     control_tub = node.create_control_tub()
 
     introducer_clients = create_introducer_clients(config, main_tub, _introducer_factory)
+    agent = Agent(reactor)
+    http_introducer_clients = create_http_introducer_clients(reactor, agent, config)
     storage_broker = create_storage_farm_broker(
         config, default_connection_handlers, foolscap_connection_handlers,
-        tub_options, introducer_clients
+        tub_options, introducer_clients + http_introducer_clients,
     )
 
     client = _client_factory(
@@ -297,6 +310,9 @@ def create_client_from_config(config, _client_factory=None, _introducer_factory=
         introducer_clients,
         storage_broker,
     )
+
+    for svc in http_introducer_clients:
+        svc.setServiceParent(client)
 
     # Initialize storage separately after creating the client.  This is
     # necessary because we need to pass a reference to the client in to the
@@ -451,6 +467,19 @@ def _sequencer(config):
     return seqnum, nonce
 
 
+def create_http_introducer_clients(reactor, agent, config):
+    urls = config.get_config(
+        "client",
+        "http_introducer_urls",
+        b"",
+    ).decode("utf-8").split(u",")
+    return list(
+        HTTPIntroducerClient(reactor, agent, DecodedURL.from_text(url))
+        for url
+        in urls
+    )
+
+
 def create_introducer_clients(config, main_tub, _introducer_factory=None):
     """
     Read, validate and parse any 'introducers.yaml' configuration.
@@ -559,6 +588,7 @@ def create_storage_farm_broker(config, default_connection_handlers, foolscap_con
         storage_client_config=storage_client_config,
     )
     for ic in introducer_clients:
+        print("Using {}".format(ic))
         sb.use_introducer(ic)
     return sb
 
