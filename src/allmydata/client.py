@@ -41,6 +41,9 @@ from allmydata.introducer.client import IntroducerClient
 from allmydata.introducer.http_client import (
     HTTPIntroducerClient,
 )
+from allmydata.introducer.grid_client import (
+    GridIntroducerClient,
+)
 from allmydata.util import (
     hashutil, base32, pollmixin, log, idlib,
     yamlutil, configutil,
@@ -90,6 +93,7 @@ _client_config = configutil.ValidConfiguration(
             "helper.furl",
             "introducer.furl",
             "http_introducer_urls",
+            "grid_introducer_bootstrap",
             "key_generator.furl",
             "mutable.format",
             "peers.preferred",
@@ -296,9 +300,11 @@ def create_client_from_config(config, _client_factory=None, _introducer_factory=
     introducer_clients = create_introducer_clients(config, main_tub, _introducer_factory)
     agent = Agent(reactor)
     http_introducer_clients = create_http_introducer_clients(reactor, agent, config)
+    grid_introducer_clients = create_grid_introducer_clients(reactor, config)
+
     storage_broker = create_storage_farm_broker(
         config, default_connection_handlers, foolscap_connection_handlers,
-        tub_options, introducer_clients + http_introducer_clients,
+        tub_options, introducer_clients + http_introducer_clients + grid_introducer_clients,
     )
 
     client = _client_factory(
@@ -311,7 +317,7 @@ def create_client_from_config(config, _client_factory=None, _introducer_factory=
         storage_broker,
     )
 
-    for svc in http_introducer_clients:
+    for svc in http_introducer_clients + grid_introducer_clients:
         svc.setServiceParent(client)
 
     # Initialize storage separately after creating the client.  This is
@@ -465,6 +471,19 @@ def _sequencer(config):
     config.write_config_file("announcement-seqnum", "{}\n".format(seqnum))
     nonce = _make_secret().strip()
     return seqnum, nonce
+
+
+def create_grid_introducer_clients(reactor, config):
+    grids = config.get_config(
+        "client",
+        "grid_introducer_bootstrap",
+        b"",
+    ).decode("utf-8").strip().splitlines()
+    return list(
+        GridIntroducerClient.from_config(reactor, grid)
+        for grid
+        in grids
+    )
 
 
 def create_http_introducer_clients(reactor, agent, config):
